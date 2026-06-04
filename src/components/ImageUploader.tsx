@@ -5,14 +5,37 @@ import { motion } from 'motion/react';
 interface ImageUploaderProps {
   key?: string;
   onUpload: (imageUrl: string) => void;
+  onPptxUpload: (file: ArrayBuffer) => void;
 }
 
-export function ImageUploader({ onUpload }: ImageUploaderProps) {
+const PPTX_TYPES = [
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-powerpoint',
+];
+
+function isPptxFile(file: File) {
+  return PPTX_TYPES.includes(file.type) || /\.pptx?$/i.test(file.name);
+}
+
+export function ImageUploader({ onUpload, onPptxUpload }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
-    if (file && file.type.startsWith('image/')) {
+    if (!file) return;
+
+    if (isPptxFile(file)) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          onPptxUpload(e.target.result as ArrayBuffer);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      return;
+    }
+
+    if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -112,7 +135,7 @@ export function ImageUploader({ onUpload }: ImageUploaderProps) {
               type="file"
               ref={fileInputRef}
               onChange={(e) => e.target.files && handleFile(e.target.files[0])}
-              accept="image/jpeg, image/png, image/webp"
+              accept="image/jpeg, image/png, image/webp, .pptx, .ppt, application/vnd.openxmlformats-officedocument.presentationml.presentation, application/vnd.ms-powerpoint"
               className="hidden"
             />
             
@@ -128,7 +151,7 @@ export function ImageUploader({ onUpload }: ImageUploaderProps) {
                 {isDragging ? 'Drop to set the stage' : 'Click or drag to upload'}
               </p>
               <p className="text-sm text-amber-500/50 uppercase tracking-widest font-semibold">
-                Supports JPG, PNG, WEBP
+                Supports JPG, PNG, WEBP, PPTX
               </p>
             </div>
           </div>
