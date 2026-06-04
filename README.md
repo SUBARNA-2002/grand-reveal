@@ -19,3 +19,4 @@ View your app in AI Studio: https://ai.studio/apps/b690c2f2-9946-4589-91e1-0b629
 3. Run the app:
    `npm run dev`
 # grand-reveal
+# ppt-reveal
